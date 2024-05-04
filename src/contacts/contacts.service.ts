@@ -8,24 +8,29 @@ import { Contact } from './schema/contact.schema';
 export class ContactsService {
   constructor(private readonly contactRepository: ContactRepository) { }
 
-  async create(createContactDto: CreateContactDto): Promise<Contact> {
+  async create(id: string, createContactDto: CreateContactDto): Promise<Contact> {
     try {
+      const { firstName, lastName, phoneNumber } = createContactDto;
       const newcontact = {
         ...createContactDto,
-        username: createContactDto.firstName + createContactDto.lastName
+        userId: id,
+        username: firstName + lastName
       }
+
+      const isExisted = await this.contactRepository.checkExistence({ username: firstName + lastName, userId: id })
+      if (isExisted) throw new BadRequestException("Name already existed");
+
       const savedContact = await this.contactRepository.create(newcontact);
       return savedContact;
     } catch (error) {
-      const { keyValue, errorResponse: { errmsg, code } } = error;
-      if (code == "11000")
-        throw new BadRequestException("Name already existed");
+      throw new BadRequestException("Name already existed");
     }
   }
 
-  async findAll(): Promise<Contact[]> {
+  async findAllPersonalContacts(userId: string): Promise<Contact[]> {
     try {
-      const allcontacts = await this.contactRepository.find({});
+      const allcontacts = await this.contactRepository.find({ userId });
+
       if (allcontacts.length < 1) throw new NotFoundException("Contact list is empty");
       return allcontacts;
     } catch (error) {
@@ -33,23 +38,43 @@ export class ContactsService {
     }
   }
 
-  async findContactsByPhoneNumber(phoneNumber: string): Promise<Contact> {
+  async search(queryParams: { firstname: string; lastname: string; phonenumber: string }) {
+    const { firstname, lastname, phonenumber } = queryParams;
+
+    switch (true) {
+      case !!firstname:
+        return this.findSingleContact({ firstName: firstname })
+        break;
+      case !!lastname:
+        return this.findSingleContact({ lastName: lastname })
+        break;
+      case !!phonenumber:
+        return this.findSingleContact({ phoneNumber: phonenumber })
+        break;
+      default:
+        // Handle the case where no valid search parameters are provided
+        break;
+    }
+  }
+
+  async findSingleContact(param: any): Promise<Contact> {
+    console.log(param, "param")
     try {
-      const contacts = await this.contactRepository.findOne({ phoneNumber });
-      if (!contacts) throw new NotFoundException("Contact list is empty");
+      const contacts = await this.contactRepository.findOne(param);
+      if (!contacts) throw new NotFoundException("Cant't find contact on the list");
       return contacts;
     } catch (error) {
       throw error
     }
   }
 
-  async update(id: string, updateContactDto: UpdateContactDto): Promise<Contact> {
+  async update(userId: string, contactId: string, updateContactDto: UpdateContactDto): Promise<Contact> {
     const updatecontact = {
       ...updateContactDto,
       username: updateContactDto.firstName + updateContactDto.lastName
     }
     try {
-      const updatedContact = await this.contactRepository.findOneAndUpdate({ _id: id }, { ...updatecontact });
+      const updatedContact = await this.contactRepository.findOneAndUpdate({ _id: contactId, userId }, { ...updatecontact });
       if (updatedContact! instanceof Contact) throw new ForbiddenException("Problem updating contact");
 
       return updatedContact;
@@ -58,11 +83,11 @@ export class ContactsService {
     }
   }
 
-  async remove(id: string) {
+  async remove(userId: string, contactId: string) {
     try {
-      return await this.contactRepository.findOneAndDelete({ _id: id })
+      return await this.contactRepository.findOneAndDelete({ _id: contactId, userId })
     } catch (error) {
-      throw new NotFoundException("Contact id could not be deleted", error);
+      throw new NotFoundException("Contact id could not be deleted", { ...error });
     }
   }
 }

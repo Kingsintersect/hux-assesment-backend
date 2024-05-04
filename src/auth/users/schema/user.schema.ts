@@ -1,5 +1,5 @@
 import { AbstractDocument } from "src/common";
-import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
+import { Prop, Schema, SchemaFactory, } from "@nestjs/mongoose";
 
 @Schema({ timestamps: true })
 export class User extends AbstractDocument {
@@ -12,6 +12,7 @@ export class User extends AbstractDocument {
 
     @Prop({ required: true })
     password: string;
+
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

@@ -1,4 +1,5 @@
-import { IsEmail, IsNotEmpty, IsString } from "class-validator";
+import { IsArray, IsEmail, IsNotEmpty, IsString } from "class-validator";
+import { Contact } from "src/contacts/schema/contact.schema";
 
 export class CreateUserDto {
     @IsString()
@@ -12,4 +13,5 @@ export class CreateUserDto {
     @IsString()
     @IsNotEmpty()
     password: string;
+
 }

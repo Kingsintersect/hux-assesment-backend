@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsPhoneNumber, IsString, Length } from "class-validator";
+import { IsEmpty, IsNotEmpty, IsPhoneNumber, IsString, Length } from "class-validator";
 
 export class CreateContactDto {
     @IsString()
@@ -14,4 +14,7 @@ export class CreateContactDto {
     @Length(11, 11)
     // @IsPhoneNumber('any', { message: 'Phone number must be valid' })
     phoneNumber: string;
+
+    @IsEmpty()
+    userId: string | null;
 }

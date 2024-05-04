@@ -34,6 +34,17 @@ export abstract class AbstractRepository<TDocument extends AbstractDocument> {
         return document;
     }
 
+    async findByRelationship(filterQuery: FilterQuery<TDocument>, entity: string) {
+        const documents = await this.model.find(filterQuery, {}).populate(entity).lean().exec();
+
+        if (!documents || documents.length === 0) {
+            this.logger.warn("No document found with filterQuery", filterQuery);
+            throw new NotFoundException('No documents found.');
+        }
+
+        return documents;
+    }
+
     async findOneAndUpdate(filterQuery: FilterQuery<TDocument>, update: UpdateQuery<TDocument>) {
         const document = await this.model.findOneAndUpdate(filterQuery, update, { lean: true, new: true });
 
@@ -46,6 +57,7 @@ export abstract class AbstractRepository<TDocument extends AbstractDocument> {
     }
 
     async find(filterQuery: FilterQuery<TDocument>) {
+        console.log(filterQuery)
         return this.model.find(filterQuery, {}, { lean: true });
     }
 
