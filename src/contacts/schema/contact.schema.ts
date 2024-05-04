@@ -2,16 +2,20 @@ import { AbstractDocument } from "src/common";
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 
 @Schema({ timestamps: true })
-export class User extends AbstractDocument {
+export class Contact extends AbstractDocument {
 
     @Prop({ required: true })
-    username: string;
+    firstName: string;
+
+    @Prop({ required: true })
+    lastName: string;
 
     @Prop({ required: true, unique: true })
-    email: string;
+    username: string;
 
     @Prop({ required: true })
-    password: string;
+    phoneNumber: string;
+
 }
 
-export const UserSchema = SchemaFactory.createForClass(User);
+export const ContactSchema = SchemaFactory.createForClass(Contact);
