@@ -1,4 +1,4 @@
-import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { ContactRepository } from './contacts.repository';
 import { CreateContactDto } from './dto/create-contact.dto';
 import { UpdateContactDto } from './dto/update-contact.dto';
@@ -7,6 +7,13 @@ import { Contact } from './schema/contact.schema';
 @Injectable()
 export class ContactsService {
   constructor(private readonly contactRepository: ContactRepository) { }
+
+  async validateUser(userId: string): Promise<any> {
+    const user = await this.contactRepository.checkExistence({ userId });
+    if (user) return user;
+
+    throw new UnauthorizedException("user unauthorized");
+  }
 
   async create(id: string, createContactDto: CreateContactDto): Promise<Contact> {
     try {
@@ -31,36 +38,16 @@ export class ContactsService {
     try {
       const allcontacts = await this.contactRepository.find({ userId });
 
-      if (allcontacts.length < 1) throw new NotFoundException("Contact list is empty");
+      // if (allcontacts.length < 1) throw new NotFoundException("Contact list is empty");
       return allcontacts;
     } catch (error) {
       throw error
     }
   }
 
-  async search(queryParams: { firstname: string; lastname: string; phonenumber: string }) {
-    const { firstname, lastname, phonenumber } = queryParams;
-
-    switch (true) {
-      case !!firstname:
-        return this.findSingleContact({ firstName: firstname })
-        break;
-      case !!lastname:
-        return this.findSingleContact({ lastName: lastname })
-        break;
-      case !!phonenumber:
-        return this.findSingleContact({ phoneNumber: phonenumber })
-        break;
-      default:
-        // Handle the case where no valid search parameters are provided
-        break;
-    }
-  }
-
-  async findSingleContact(param: any): Promise<Contact> {
-    console.log(param, "param")
+  async findSingleContact(userId: any, contactId: string): Promise<Contact> {
     try {
-      const contacts = await this.contactRepository.findOne(param);
+      const contacts = await this.contactRepository.findOne({ userId, _id: contactId });
       if (!contacts) throw new NotFoundException("Cant't find contact on the list");
       return contacts;
     } catch (error) {

@@ -1,38 +1,43 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestjs/common';
+import { Controller, Get, Request, Post, Body, Patch, Param, Delete, Query, UseGuards } from '@nestjs/common';
+import { RouteAuthGuard } from 'src/auth/guards/route-auth.guard';
 import { ContactsService } from './contacts.service';
 import { CreateContactDto } from './dto/create-contact.dto';
 import { UpdateContactDto } from './dto/update-contact.dto';
+import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 
 @Controller('contacts')
 export class ContactsController {
   constructor(private readonly contactsService: ContactsService) { }
 
-  @Get('search')
-  search(@Query() queryParams: any) {
-    return this.contactsService.search(queryParams);
+  @Post()
+  @UseGuards(JwtAuthGuard)
+  create(@Request() req: any, @Body() createContactDto: CreateContactDto) {
+    return this.contactsService.create(req.user.userId, createContactDto);
   }
 
-  @Post(':userId')
-  create(@Param('userId') userId: string, @Body() createContactDto: CreateContactDto) {
-    return this.contactsService.create(userId, createContactDto);
+  @Get()
+  @UseGuards(JwtAuthGuard)
+  findAll(@Request() req: any) {
+    return this.contactsService.findAllPersonalContacts(req.user.userId);
   }
 
-  @Get(':userId')
-  findAll(@Param('userId') userId: string,) {
-    return this.contactsService.findAllPersonalContacts(userId);
+  @Get(':contactId')
+  @UseGuards(JwtAuthGuard)
+  findOne(@Request() req: any, @Param('contactId') contactId: string) {
+    return this.contactsService.findSingleContact(req.user.userId, contactId);
   }
 
-
-
-  @Patch(':userId')
-  update(@Param('userId') userId: string, @Query() queryParams: any, @Body() updateContactDto: UpdateContactDto) {
+  @Patch()
+  @UseGuards(JwtAuthGuard)
+  update(@Request() req: any, @Query() queryParams: any, @Body() updateContactDto: UpdateContactDto) {
     const contactId = queryParams.contactId;
-    return this.contactsService.update(userId, contactId, updateContactDto);
+    return this.contactsService.update(req.user.userId, contactId, updateContactDto);
   }
 
-  @Delete(':userId')
-  remove(@Param('userId') userId: string, @Query() queryParams: any) {
+  @Delete()
+  @UseGuards(JwtAuthGuard)
+  remove(@Request() req: any, @Query() queryParams: any) {
     const contactId = queryParams.contactId;
-    return this.contactsService.remove(userId, contactId);
+    return this.contactsService.remove(req.user.userId, contactId);
   }
 }

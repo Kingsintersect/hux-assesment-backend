@@ -11,7 +11,7 @@ export class CreateContactDto {
 
     @IsString()
     @IsNotEmpty()
-    @Length(11, 11)
+    @Length(11)
     // @IsPhoneNumber('any', { message: 'Phone number must be valid' })
     phoneNumber: string;
 

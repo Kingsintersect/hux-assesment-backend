@@ -10,7 +10,8 @@ You can clone the Frontend from its Repository
 Open its README file and follow the instructions run the features of the application
 
 ## System Requirements
-1. Make sure you have MongoDB installed and running on your system.
+1. Make sure you have the NodeJS installed and running on your system.
+2. Make sure you have MongoDB installed and running on your system.
 
 ### Backend
 1. Clone the repository:
@@ -44,6 +45,7 @@ You can then use the contact management features to add, view, update, and delet
 
 To logout, simply click on the logout button
 
+- NOTE  token is valid only for 1 Hour before it expires;
 
 ## Technologies Used
 NestJS
